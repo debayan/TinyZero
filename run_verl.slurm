@@ -1,26 +1,29 @@
 #!/bin/bash
 
 # Define variables
-export N_GPUS=1
-export BASE_MODEL=/storage/models/models--Qwen--Qwen2.5-0.5B/snapshots/060db6499f32faf8b98477b0a26969ef7d8b9987
+export N_GPUS=2
+#export BASE_MODEL=/storage/models/models--Qwen--Qwen2.5-0.5B/snapshots/060db6499f32faf8b98477b0a26969ef7d8b9987
+export BASE_MODEL=/storage/models/models--Qwen--Qwen2.5-3B/snapshots/3aab1f1954e9cc14eb9509a215f9e5ca08227a9b
 export DATA_DIR=./localdataset1
-export ROLLOUT_TP_SIZE=1
-export EXPERIMENT_NAME=countdown-Qwen--Qwen2.5-0.5B
+export ROLLOUT_TP_SIZE=2
+export EXPERIMENT_NAME=countdown-Qwen--Qwen2.5-3B
+#export EXPERIMENT_NAME=countdown-Qwen--Qwen2.5-0.5B
 export VLLM_ATTENTION_BACKEND=XFORMERS
 
 # Run your Python script
 python3 -m verl.trainer.main_ppo \
     data.train_files=$DATA_DIR/train.parquet \
     data.val_files=$DATA_DIR/test.parquet \
-    data.train_batch_size=256 \
-    data.val_batch_size=1312 \
+    data.train_batch_size=16 \
+    data.val_batch_size=16 \
     data.max_prompt_length=256 \
     data.max_response_length=1024 \
     actor_rollout_ref.model.path=$BASE_MODEL \
     actor_rollout_ref.actor.optim.lr=1e-6 \
-    actor_rollout_ref.actor.ppo_mini_batch_size=128 \
-    actor_rollout_ref.actor.ppo_micro_batch_size=8 \
-    actor_rollout_ref.rollout.log_prob_micro_batch_size=8 \
+    actor_rollout_ref.actor.ppo_mini_batch_size=16 \
+    actor_rollout_ref.actor.ppo_micro_batch_size=16 \
+    actor_rollout_ref.rollout.log_prob_micro_batch_size=16 \
+    critic.model.enable_gradient_checkpointing=True \
     actor_rollout_ref.rollout.tensor_model_parallel_size=$ROLLOUT_TP_SIZE \
     actor_rollout_ref.rollout.gpu_memory_utilization=0.4 \
     actor_rollout_ref.ref.log_prob_micro_batch_size=4 \
